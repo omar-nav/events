@@ -1,0 +1,108 @@
+{
+	"info": {
+		"_postman_id": "aeb9ea83-8d11-42b4-8df4-187172ea95aa",
+		"name": "Events",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "19394263"
+	},
+	"item": [
+		{
+			"name": "Get Events",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Event by Id",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events/2",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events",
+						"2"
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Create Event",
+			"request": {
+				"method": "POST",
+				"header": [],
+				"body": {
+					"mode": "raw",
+					"raw": "{\r\n  \"Name\": \"Concert of Jazz Artist\",\r\n  \"Category\": \"Concert\",\r\n  \"Brand\": \"Tempo\",\r\n  \"Slug\": \"www.tempoconcert.com\",\r\n  \"Status\": 3\r\n}",
+					"options": {
+						"raw": {
+							"language": "json"
+						}
+					}
+				},
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events/create",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events",
+						"create"
+					]
+				}
+			},
+			"response": []
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "portNumber",
+			"value": "7049",
+			"type": "string"
+		}
+	]
+}
