@@ -43,6 +43,8 @@ namespace Event.API.Controllers
                 Status = eventToCreate.Status,
             };
 
+            EventsDataStore.Current.Events.Add(finalEvent);
+
             return Ok(finalEvent);
         }
     }
