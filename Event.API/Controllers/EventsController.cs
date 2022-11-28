@@ -1,8 +1,11 @@
-﻿using Event.API.Models;
-using Event.API.Models.Enums;
+﻿using AutoMapper;
+using Event.API.Entities;
+using Event.API.Models;
+using Event.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using System.ComponentModel.DataAnnotations;
+using Microsoft.IdentityModel.Tokens;
+using System.Data;
 
 namespace Event.API.Controllers
 {
@@ -10,66 +13,62 @@ namespace Event.API.Controllers
     [ApiController]
     public class EventsController : ControllerBase
     {
-        [HttpGet]
-        public ActionResult<EventDto> GetEvents()
+        private readonly IEventRepository _eventRepository;
+        private readonly IMapper _mapper;
+
+        public EventsController(IEventRepository eventRepository, IMapper mapper)
         {
-            return Ok(EventsDataStore.Current.Events);
+            _eventRepository = eventRepository ??
+                throw new ArgumentNullException(nameof(eventRepository));
+
+            _mapper= mapper ??
+                throw new ArgumentNullException(nameof(mapper));
+        }
+
+        [HttpGet]
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents()
+        {
+            var eventEntities = await _eventRepository.GetEventsAsync();
+            return Ok(_mapper.Map<IEnumerable<EventDto>>(eventEntities));
         }
 
         [HttpGet("{id}")]
-        public ActionResult<EventDto> GetEvent(int id)
+        public async Task<ActionResult<EventDto>> GetEvent(int id)
         {
-            var eventToReturn = EventsDataStore.Current.Events
-                .FirstOrDefault(e => e.Id == id);
+            var eventToReturn = await _eventRepository.GetEventEntityAsync(id);
 
             if (eventToReturn == null)
             {
                 return NotFound();
             }
 
-            return Ok(eventToReturn);
+            return Ok(_mapper.Map<EventDto>(eventToReturn));
         }
 
         [Route("create")]
         [HttpPost]
         public async Task<ActionResult<EventDto>> CreateEvent(EventCreationDto eventToCreate)
-        {          
-            var maxEventId = EventsDataStore.Current.Events.Select(e => e.Id).Max(id => id);
+        {
+            var finalEvent = _mapper.Map<EventEntity>(eventToCreate);
 
-            var finalEvent = new EventDto()
-            {
-                Id = ++maxEventId,
-                Name = eventToCreate.Name,
-                Category = eventToCreate.Category,
-                Brand = eventToCreate.Brand,
-                Slug = eventToCreate.Slug,
-                Status = eventToCreate.Status,
-            };
+            await _eventRepository.AddEvent(finalEvent);
 
-            EventsDataStore.Current.Events.Add(finalEvent);
+            await _eventRepository.SaveChangesAsync();
 
-            return Ok(finalEvent);
+            return CreatedAtAction(nameof(GetEvent), new { id = finalEvent.Id }, eventToCreate);
         }
 
-        [Route("update")]
-        [HttpPatch("{eventId}")]
-        public ActionResult UpdateEvent(int eventId, JsonPatchDocument<EventForUpdateDto> patchDocument)
+        [HttpPatch, Route("update/{eventId}")]
+        public async Task<ActionResult> PartiallyUpdateEvent(int eventId, JsonPatchDocument<EventForUpdateDto> patchDocument)
         {
-            var eventFromStore = EventsDataStore.Current.Events.FirstOrDefault(e => e.Id == eventId);
-
-            if (eventFromStore == null)
+            if (!await _eventRepository.EventExistsAsync(eventId))
             {
                 return NotFound();
             }
 
-            var eventToPatch = new EventForUpdateDto()
-                {   
-                    Name = eventFromStore.Name,
-                    Category = eventFromStore.Category,
-                    Brand = eventFromStore.Brand, 
-                    Slug = eventFromStore.Slug,
-                    Status = eventFromStore.Status
-                };
+            var eventEntity = await _eventRepository.GetEventEntityAsync(eventId);
+
+            var eventToPatch = _mapper.Map<EventForUpdateDto>(eventEntity);
 
             patchDocument.ApplyTo(eventToPatch, ModelState);
 
@@ -83,26 +82,25 @@ namespace Event.API.Controllers
                 return BadRequest(ModelState);
             }
 
-            eventFromStore.Name = eventToPatch.Name;
-            eventFromStore.Category = eventToPatch.Category;
-            eventFromStore.Brand = eventToPatch.Brand;
-            eventFromStore.Slug = eventToPatch.Slug;
-            eventFromStore.Status = eventToPatch.Status;
+            _mapper.Map(eventToPatch, eventEntity);
+            await _eventRepository.SaveChangesAsync();
 
             return NoContent();
         }
 
         [HttpDelete("{eventId}")]
-        public ActionResult DeletePointOfInterest(int eventId)
+        public async Task<ActionResult> DeletePointOfInterest(int eventId)
         {
-            var eventFromStore = EventsDataStore.Current.Events.FirstOrDefault(e => e.Id == eventId);
-
-            if (eventFromStore == null)
+            if (!await _eventRepository.EventExistsAsync(eventId))
             {
                 return NotFound();
             }
 
-            EventsDataStore.Current.Events.Remove(eventFromStore);
+            var eventEntity = await _eventRepository.GetEventEntityAsync(eventId);
+
+            _eventRepository.DeleteEvent(eventEntity);
+            await _eventRepository.SaveChangesAsync();
+
             return NoContent();
         }
     }

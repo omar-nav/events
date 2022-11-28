@@ -21,6 +21,8 @@ builder.Services.AddDbContext<EventContext>(DbContextOptions => DbContextOptions
 
 builder.Services.AddScoped<IEventRepository, EventRepository>();
 
+builder.Services.AddAutoMapper(AppDomain.CurrentDomain.GetAssemblies());
+
 var app = builder.Build();
 
 if (app.Environment.IsDevelopment())
