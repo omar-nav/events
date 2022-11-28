@@ -1,5 +1,8 @@
 ﻿using Event.API.Models;
+using Event.API.Models.Enums;
+using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
+using System.ComponentModel.DataAnnotations;
 
 namespace Event.API.Controllers
 {
@@ -30,7 +33,7 @@ namespace Event.API.Controllers
         [Route("create")]
         [HttpPost]
         public async Task<ActionResult<EventDto>> CreateEvent(EventCreationDto eventToCreate)
-        {
+        {          
             var maxEventId = EventsDataStore.Current.Events.Select(e => e.Id).Max(id => id);
 
             var finalEvent = new EventDto()
@@ -46,6 +49,61 @@ namespace Event.API.Controllers
             EventsDataStore.Current.Events.Add(finalEvent);
 
             return Ok(finalEvent);
+        }
+
+        [Route("update")]
+        [HttpPatch("{eventId}")]
+        public ActionResult UpdateEvent(int eventId, JsonPatchDocument<EventForUpdateDto> patchDocument)
+        {
+            var eventFromStore = EventsDataStore.Current.Events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventFromStore == null)
+            {
+                return NotFound();
+            }
+
+            var eventToPatch = new EventForUpdateDto()
+                {   
+                    Name = eventFromStore.Name,
+                    Category = eventFromStore.Category,
+                    Brand = eventFromStore.Brand, 
+                    Slug = eventFromStore.Slug,
+                    Status = eventFromStore.Status
+                };
+
+            patchDocument.ApplyTo(eventToPatch, ModelState);
+
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            if (!TryValidateModel(eventToPatch))
+            {
+                return BadRequest(ModelState);
+            }
+
+            eventFromStore.Name = eventToPatch.Name;
+            eventFromStore.Category = eventToPatch.Category;
+            eventFromStore.Brand = eventToPatch.Brand;
+            eventFromStore.Slug = eventToPatch.Slug;
+            eventFromStore.Status = eventToPatch.Status;
+
+            return NoContent();
+        }
+
+        [HttpDelete("{eventId}")]
+        public ActionResult DeletePointOfInterest(int eventId)
+        {
+            var eventFromStore = EventsDataStore.Current.Events.FirstOrDefault(e => e.Id == eventId);
+
+            if (eventFromStore == null)
+            {
+                return NotFound();
+            }
+
+            EventsDataStore.Current.Events.Remove(eventFromStore);
+            return NoContent();
         }
     }
 }
