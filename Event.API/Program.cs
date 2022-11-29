@@ -14,8 +14,6 @@ builder.Services.AddControllers(options =>
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 
-builder.Services.AddSingleton<EventsDataStore>();
-
 builder.Services.AddDbContext<EventContext>(DbContextOptions => DbContextOptions.UseSqlServer(
     builder.Configuration["ConnectionStrings:EventDBConnectionString"]));
 

@@ -5,7 +5,8 @@ namespace Event.API.Services
     public interface IEventRepository
     {
         Task<IEnumerable<EventEntity>> GetEventsAsync();
-        Task<IEnumerable<EventEntity>> GetEventsAsync(string? searchName, string? searchSlug, string? searchCategory, string? searchBrand);
+        Task<(IEnumerable<EventEntity>, PaginationMetadata)> GetEventsAsync(string? searchName, string? searchSlug, 
+            string? searchCategory, string? searchBrand, int pageNumber, int pageSize);
         Task<bool> EventExistsAsync(int eventId);
         Task<EventEntity?> GetEventEntityAsync(int eventId);
         Task AddEvent(EventEntity eventEntity);

@@ -16,17 +16,9 @@ namespace Event.API.Services
             return await _context.EventEntities.OrderBy(e => e.Name).ToListAsync();
         }
 
-        public async Task<IEnumerable<EventEntity>> GetEventsAsync(string? searchName, string? searchSlug, 
-            string? searchCategory, string? searchBrand)
+        public async Task<(IEnumerable<EventEntity>, PaginationMetadata)> GetEventsAsync(string? searchName, string? searchSlug, 
+            string? searchCategory, string? searchBrand, int pageNumber, int pageSize)
         {
-            if (string.IsNullOrEmpty(searchName)
-                && string.IsNullOrEmpty(searchSlug)
-                && string.IsNullOrEmpty(searchCategory)
-                && string.IsNullOrEmpty(searchBrand))
-            {
-                return await GetEventsAsync();
-            }
-
             var collection = _context.EventEntities as IQueryable<EventEntity>;
 
             if (!string.IsNullOrWhiteSpace(searchName) || !string.IsNullOrWhiteSpace(searchSlug) 
@@ -44,7 +36,17 @@ namespace Event.API.Services
                 || (!string.IsNullOrEmpty(searchBrand) && e.Brand.Contains(searchBrand)));
             }
 
-            return await collection.OrderBy(e => e.Name).ToListAsync();
+            var totalItemCount = await collection.CountAsync();
+
+            var paginationMetadata = new PaginationMetadata(
+                totalItemCount, pageSize, pageNumber);
+
+            var collectionResult = await collection.OrderBy(e => e.Name)
+                .Skip(pageSize * (pageNumber -1 ))
+                .Take(pageSize)
+                .ToListAsync();
+
+            return (collectionResult, paginationMetadata);
         }
 
         public async Task<bool> EventExistsAsync(int eventId)

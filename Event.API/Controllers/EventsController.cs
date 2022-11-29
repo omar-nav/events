@@ -4,8 +4,7 @@ using Event.API.Models;
 using Event.API.Services;
 using Microsoft.AspNetCore.JsonPatch;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.IdentityModel.Tokens;
-using System.Data;
+using System.Text.Json;
 
 namespace Event.API.Controllers
 {
@@ -15,6 +14,7 @@ namespace Event.API.Controllers
     {
         private readonly IEventRepository _eventRepository;
         private readonly IMapper _mapper;
+        const int maxEventsPageSize = 15;
 
         public EventsController(IEventRepository eventRepository, IMapper mapper)
         {
@@ -26,9 +26,19 @@ namespace Event.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents(string? searchName, string? searchSlug, string? searchCategory, string? searchBrand)
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents(string? searchName, string? searchSlug, 
+            string? searchCategory, string? searchBrand, int pageNumber = 1, int pageSize = 5)
         {
-            var eventEntities = await _eventRepository.GetEventsAsync(searchName, searchSlug, searchCategory, searchBrand);
+            if (pageSize > maxEventsPageSize)
+            {
+                pageSize = maxEventsPageSize;
+            }
+
+            var (eventEntities, paginationMetadata) = await _eventRepository.GetEventsAsync(searchName, searchSlug, searchCategory, searchBrand, pageNumber, pageSize);
+
+            Response.Headers.Add("X-Pagination",
+                JsonSerializer.Serialize(paginationMetadata));
+            
             return Ok(_mapper.Map<IEnumerable<EventDto>>(eventEntities));
         }
 
