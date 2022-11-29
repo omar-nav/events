@@ -26,9 +26,9 @@ namespace Event.API.Controllers
         }
 
         [HttpGet]
-        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents()
+        public async Task<ActionResult<IEnumerable<EventDto>>> GetEvents(string? searchName, string? searchSlug, string? searchCategory, string? searchBrand)
         {
-            var eventEntities = await _eventRepository.GetEventsAsync();
+            var eventEntities = await _eventRepository.GetEventsAsync(searchName, searchSlug, searchCategory, searchBrand);
             return Ok(_mapper.Map<IEnumerable<EventDto>>(eventEntities));
         }
 

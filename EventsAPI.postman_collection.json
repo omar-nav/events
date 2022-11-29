@@ -137,6 +137,110 @@
 				}
 			},
 			"response": []
+		},
+		{
+			"name": "Get Events search by Name",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events?searchName=Rock",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events"
+					],
+					"query": [
+						{
+							"key": "searchName",
+							"value": "Rock"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Events search by Slug",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events?searchSlug=yamaha",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events"
+					],
+					"query": [
+						{
+							"key": "searchSlug",
+							"value": "yamaha"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Events search by Category",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events?searchCategory=Wedding",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events"
+					],
+					"query": [
+						{
+							"key": "searchCategory",
+							"value": "Wedding"
+						}
+					]
+				}
+			},
+			"response": []
+		},
+		{
+			"name": "Get Events search by Brand",
+			"request": {
+				"method": "GET",
+				"header": [],
+				"url": {
+					"raw": "https://localhost:{{portNumber}}/api/events?searchBrand=Saga",
+					"protocol": "https",
+					"host": [
+						"localhost"
+					],
+					"port": "{{portNumber}}",
+					"path": [
+						"api",
+						"events"
+					],
+					"query": [
+						{
+							"key": "searchBrand",
+							"value": "Saga"
+						}
+					]
+				}
+			},
+			"response": []
 		}
 	],
 	"event": [
